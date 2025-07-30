@@ -12,13 +12,13 @@ class DataStorageOutput(BaseModel):
     user: str
     datetime: str  # dd/MM/YYYY HH:mm:ss format
 
+# In-memory storage array (class variable shared across instances)
+_storage: List[DataStorageOutput] = []
+
 class DataStorageTool(BaseTool):
     name: str = "data_storage"
     description: str = "Stores user data with datetime in memory cache. Input format: user (string), datetime (YYYY-MM-DD HH:mm:ss), Message (string). Stored format: user (string), datetime (dd/MM/YYYY HH:mm:ss)."
     args_schema: Type[BaseModel] = DataStorageInput
-    
-    # In-memory storage array (class variable shared across instances)
-    _storage: List[DataStorageOutput] = []
 
     def _run(self, user: str, datetime_str: str, message: str) -> str:
         try:
@@ -27,9 +27,9 @@ class DataStorageTool(BaseTool):
                 return f"Error: Invalid message. Expected 'Check in', got: {message}"
             
             # Check user has not already checked in
-            for entry in self._storage:
+            for entry in _storage:
                 if entry.user == user:
-                    return f"Error: User has already checked in. User: {user}, Datetime: {entry.datetime}. Total records: {len(self._storage)}"
+                    return f"Error: User has already checked in. User: {user}, Datetime: {entry.datetime}. Total records: {len(_storage)}"
             
             # Parse input datetime (YYYY-MM-DD HH:mm:ss)
             input_datetime = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
@@ -44,9 +44,9 @@ class DataStorageTool(BaseTool):
             )
             
             # Store in memory array
-            self._storage.append(data_entry)
+            _storage.append(data_entry)
             
-            return f"Data stored successfully. User: {user}, Datetime: {output_datetime}. Total records: {len(self._storage)} \n"
+            return f"Data stored successfully. User: {user}, Datetime: {output_datetime}. Total records: {len(_storage)} \n"
             
         except ValueError as e:
             return f"Error: Invalid datetime format. Expected YYYY-MM-DD HH:mm:ss, got: {datetime_str}. Details: {str(e)} \n"
@@ -56,21 +56,21 @@ class DataStorageTool(BaseTool):
     @classmethod
     def get_all_data(cls) -> List[DataStorageOutput]:
         """Get all stored data"""
-        return cls._storage.copy()
+        return list(_storage)
     
     @classmethod
     def get_data_count(cls) -> int:
         """Get count of stored records"""
-        return len(cls._storage)
+        return len(_storage)
     
     @classmethod
     def clear_data(cls) -> str:
         """Clear all stored data"""
-        count = len(cls._storage)
-        cls._storage.clear()
+        count = len(_storage)
+        _storage.clear()
         return f"Cleared {count} records from storage"
     
     @classmethod
     def get_data_by_user(cls, user: str) -> List[DataStorageOutput]:
         """Get data filtered by user"""
-        return [entry for entry in cls._storage if entry.user == user]
+        return [entry for entry in _storage if entry.user == user]
