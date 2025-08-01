@@ -35,7 +35,10 @@ or
 ## Project Structure
 
 - `server.py` - FastAPI server
-- `agent.py` - AI Agent implementation with LangChain
-- `tools/data_storage.py` - Data storage tool
+- `trial_agent.py` - Trial AI Agent
+- `check_in_agent.py` - Check In AI Agent
+- `leave_agent.py` - Leave AI Agent
+- `tools/data_storage.py` - Data storage tool (For Check In)
+- `tools/leave_data.py` - Leave data tool (For Leave)
 - `requirements.txt` - Python dependencies
 - `.env` - Environment variables (API keys)# poc-check-in-agent
